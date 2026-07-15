@@ -7,12 +7,14 @@ async function main() {
   const adminEmail = 'admin@easyslr.com';
   const adminPassword = 'adminpassword123';
   
-  // Clean database
+  console.log('Cleaning up database (except users)...');
+  
+  // Clean database except users
   await prisma.projectMember.deleteMany({});
   await prisma.article.deleteMany({});
   await prisma.project.deleteMany({});
   await prisma.organization.deleteMany({});
-  await prisma.user.deleteMany({});
+  // Note: user.deleteMany({}) has been removed to keep all users intact!
 
   console.log('Seeding database...');
 
@@ -24,16 +26,24 @@ async function main() {
   });
   console.log(`Created Organization: ${org.name} (${org.id})`);
 
-  // 2. Create User
-  const hashedPassword = await bcrypt.hash(adminPassword, 10);
-  const user = await prisma.user.create({
-    data: {
-      email: adminEmail,
-      name: 'System Admin',
-      password: hashedPassword,
-    },
+  // 2. Retrieve or Create User
+  let user = await prisma.user.findUnique({
+    where: { email: adminEmail },
   });
-  console.log(`Created User: ${user.email}`);
+
+  if (!user) {
+    const hashedPassword = await bcrypt.hash(adminPassword, 10);
+    user = await prisma.user.create({
+      data: {
+        email: adminEmail,
+        name: 'System Admin',
+        password: hashedPassword,
+      },
+    });
+    console.log(`Created User: ${user.email}`);
+  } else {
+    console.log(`User already exists, keeping intact: ${user.email}`);
+  }
 
   // 3. Create Projects
   const project1 = await prisma.project.create({
