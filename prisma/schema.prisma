@@ -1,0 +1,102 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum ProjectRole {
+  OWNER
+  REVIEWER
+}
+
+enum ArticleStatus {
+  PENDING
+  INCLUDED
+  EXCLUDED
+  MAYBE
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+model User {
+  id            String          @id @default(cuid())
+  name          String?
+  email         String          @unique
+  password      String?         // Hashed password (optional to support future OAuth login)
+  memberships   ProjectMember[]
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+}
+
+model Organization {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  projects  Project[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Project {
+  id             String          @id @default(cuid())
+  name           String
+  description    String?
+  organizationId String
+  organization   Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  members        ProjectMember[]
+  articles       Article[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  @@unique([organizationId, name])
+  @@index([organizationId])
+}
+
+model ProjectMember {
+  id        String      @id @default(cuid())
+  role      ProjectRole
+  userId    String
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projectId String
+  project   Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdAt DateTime    @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@unique([userId, projectId])
+  @@index([projectId])
+  @@index([userId])
+}
+
+model Article {
+  id              String        @id @default(cuid())
+  pmid            String?
+  title           String
+  authors         String?
+  firstAuthor     String?       // Extracted from Excel columns
+  citation        String?
+  journal         String?
+  publicationYear Int?
+  doi             String?
+  status          ArticleStatus @default(PENDING)
+  priority        Priority      @default(MEDIUM)
+  notes           String?
+  pmcid           String?       // Extracted from Excel columns
+  nihmsId         String?       // Extracted from Excel columns
+  createDate      DateTime?     // Extracted from Excel columns
+  projectId       String
+  project         Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@unique([projectId, pmid])
+  @@index([projectId])
+  @@index([status])
+  @@index([publicationYear])
+  @@index([title])
+}
