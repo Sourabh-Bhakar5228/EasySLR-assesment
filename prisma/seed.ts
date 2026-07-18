@@ -6,6 +6,8 @@ const prisma = new PrismaClient();
 async function main() {
   const adminEmail = 'admin@easyslr.com';
   const adminPassword = 'adminpassword123';
+  const reviewerEmail = 'reviewer@easyslr.com';
+  const reviewerPassword = 'password123';
   
   console.log('Cleaning up database (except users)...');
   
@@ -26,23 +28,41 @@ async function main() {
   });
   console.log(`Created Organization: ${org.name} (${org.id})`);
 
-  // 2. Retrieve or Create User
-  let user = await prisma.user.findUnique({
+  // 2. Retrieve or Create Users
+  let adminUser = await prisma.user.findUnique({
     where: { email: adminEmail },
   });
 
-  if (!user) {
+  if (!adminUser) {
     const hashedPassword = await bcrypt.hash(adminPassword, 10);
-    user = await prisma.user.create({
+    adminUser = await prisma.user.create({
       data: {
         email: adminEmail,
         name: 'System Admin',
         password: hashedPassword,
       },
     });
-    console.log(`Created User: ${user.email}`);
+    console.log(`Created User: ${adminUser.email}`);
   } else {
-    console.log(`User already exists, keeping intact: ${user.email}`);
+    console.log(`User already exists, keeping intact: ${adminUser.email}`);
+  }
+
+  let reviewerUser = await prisma.user.findUnique({
+    where: { email: reviewerEmail },
+  });
+
+  if (!reviewerUser) {
+    const hashedPassword = await bcrypt.hash(reviewerPassword, 10);
+    reviewerUser = await prisma.user.create({
+      data: {
+        email: reviewerEmail,
+        name: 'Clinical Reviewer',
+        password: hashedPassword,
+      },
+    });
+    console.log(`Created User: ${reviewerUser.email}`);
+  } else {
+    console.log(`User already exists, keeping intact: ${reviewerUser.email}`);
   }
 
   // 3. Create Projects
@@ -64,29 +84,51 @@ async function main() {
   });
   console.log(`Created Project: ${project2.name}`);
 
-  // 4. Create Project Members (with role OWNER)
+  // 4. Create Project Members (with roles)
   await prisma.projectMember.create({
     data: {
       role: ProjectRole.OWNER,
-      userId: user.id,
+      userId: adminUser.id,
       projectId: project1.id,
     },
   });
-  console.log(`Assigned User ${user.email} as OWNER of Project: ${project1.name}`);
+  console.log(`Assigned User ${adminUser.email} as OWNER of Project: ${project1.name}`);
 
   await prisma.projectMember.create({
     data: {
       role: ProjectRole.OWNER,
-      userId: user.id,
+      userId: adminUser.id,
       projectId: project2.id,
     },
   });
-  console.log(`Assigned User ${user.email} as OWNER of Project: ${project2.name}`);
+  console.log(`Assigned User ${adminUser.email} as OWNER of Project: ${project2.name}`);
+
+  // Assign Reviewer
+  await prisma.projectMember.create({
+    data: {
+      role: ProjectRole.REVIEWER,
+      userId: reviewerUser.id,
+      projectId: project1.id,
+    },
+  });
+  console.log(`Assigned User ${reviewerUser.email} as REVIEWER of Project: ${project1.name}`);
+
+  await prisma.projectMember.create({
+    data: {
+      role: ProjectRole.REVIEWER,
+      userId: reviewerUser.id,
+      projectId: project2.id,
+    },
+  });
+  console.log(`Assigned User ${reviewerUser.email} as REVIEWER of Project: ${project2.name}`);
 
   console.log('\nSeeding completed successfully!');
   console.log(`----------------------------------------`);
   console.log(`Login Email:    ${adminEmail}`);
   console.log(`Login Password: ${adminPassword}`);
+  console.log(`----------------------------------------`);
+  console.log(`Login Email:    ${reviewerEmail}`);
+  console.log(`Login Password: ${reviewerPassword}`);
   console.log(`----------------------------------------`);
 }
 

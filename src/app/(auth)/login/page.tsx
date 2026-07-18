@@ -131,10 +131,7 @@ export default function LoginPage() {
               </Button>
             </form>
 
-            <div className="mt-6 text-center text-xs text-slate-500">
-              <p>Demo Email: <span className="text-slate-300 font-mono">admin@easyslr.com</span></p>
-              <p className="mt-1">Demo Password: <span className="text-slate-300 font-mono">adminpassword123</span></p>
-            </div>
+           
           </CardContent>
         </Card>
       </div>

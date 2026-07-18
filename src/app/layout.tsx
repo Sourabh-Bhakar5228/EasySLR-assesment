@@ -19,8 +19,30 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full">
-      <body className={`${inter.variable} font-sans antialiased bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 h-full`}>
+    <html lang="en" className="h-full" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var b = document.body;
+                  if (b) {
+                    var attrs = b.attributes;
+                    for (var i = attrs.length - 1; i >= 0; i--) {
+                      var n = attrs[i].name;
+                      if (n.startsWith('data-new-gr') || n.startsWith('data-gr-ext') || n === 'cz-shortcut-listen') {
+                        b.removeAttribute(n);
+                      }
+                    }
+                  }
+                } catch(e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
+      <body className={`${inter.variable} font-sans antialiased bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 h-full`} suppressHydrationWarning>
         <Providers>{children}</Providers>
       </body>
     </html>

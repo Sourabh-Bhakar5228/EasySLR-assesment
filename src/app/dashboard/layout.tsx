@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Loader } from '@/components/ui/loader';
+import { getUserRoleStatus } from '@/actions/projects';
 
 interface SidebarItem {
   name: string;
@@ -39,6 +40,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const { data: session, status } = useSession();
   const pathname = usePathname();
   const [isMobileOpen, setIsMobileOpen] = React.useState(false);
+  const [isOwner, setIsOwner] = React.useState<boolean | null>(null);
+
+  React.useEffect(() => {
+    if (session?.user?.id) {
+      getUserRoleStatus().then((res) => {
+        setIsOwner(res.isOwner);
+      });
+    }
+  }, [session]);
+
+  const filteredSidebarItems = React.useMemo(() => {
+    if (isOwner === false) {
+      return sidebarItems.filter((item) => item.name !== 'Import' && item.name !== 'Settings');
+    }
+    return sidebarItems;
+  }, [isOwner]);
 
   if (status === 'loading') {
     return <Loader fullPage />;
@@ -51,7 +68,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <div className="min-h-screen flex bg-slate-50 dark:bg-slate-950">
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex flex-col w-64 border-r border-slate-200/80 bg-white dark:border-slate-800/80 dark:bg-slate-900/40 backdrop-blur-xl">
+      <aside className="sticky top-0 h-screen hidden md:flex flex-col w-64 border-r border-slate-200/80 bg-white dark:border-slate-800/80 dark:bg-slate-900/40 backdrop-blur-xl">
         {/* Brand */}
         <div className="flex h-16 items-center gap-2 px-6 border-b border-slate-100 dark:border-slate-850">
           <div className="h-8 w-8 rounded-lg bg-primary-600 flex items-center justify-center text-white font-bold shadow-md shadow-primary-500/20">
@@ -63,8 +80,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
 
         {/* Navigation Items */}
-        <nav className="flex-1 space-y-1 px-4 py-6">
-          {sidebarItems.map((item) => {
+        <nav className="flex-1 overflow-y-auto space-y-1 px-4 py-6">
+          {filteredSidebarItems.map((item) => {
             const isActive = pathname === item.href;
             const Icon = item.icon;
             return (
@@ -147,7 +164,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
 
         <nav className="flex-1 space-y-1 px-4 py-6">
-          {sidebarItems.map((item) => {
+          {filteredSidebarItems.map((item) => {
             const isActive = pathname === item.href;
             const Icon = item.icon;
             return (
