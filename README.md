@@ -198,19 +198,7 @@ A utility route `/api/dev-db-tool` is exposed for easy development auditing and 
 - **Saved Views (LocalStorage)** allows reviewers to save their active filter query combination (e.g. "Heart Disease Pending") with a custom name to load them instantly.
 - **CSV Export:** Reviewers can click "Export CSV" to compile all active filtered articles (or selected ones) server-side and download them as a standard `.csv` file.
 
----
 
-## 🤖 AI Usage
-
-AI Assistants (Antigravity & Copilot) were utilized throughout the development cycle to:
-1. Scaffold repetitive UI components and Tailwind layouts.
-2. Formulate complex Prisma transactions (specifically the batching logic for the 50k row import).
-3. Generate sample mock data and seed scripts for testing.
-4. Refactor the grid workspace from client-side search/filters to a scalable server-side model.
-5. Create unit tests covering row validation and RBAC guards.
-6. Draft this architectural README and final QA reports.
-
----
 
 ## ⚖️ Tradeoffs & Future Improvements
 
