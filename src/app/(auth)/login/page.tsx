@@ -57,12 +57,11 @@ export default function LoginPage() {
         password: data.password,
       });
 
-      if (result?.error) {
+      if (result?.error || !result?.ok) {
         toast.error('Invalid email or password');
       } else {
         toast.success('Signed in successfully!');
-        router.push('/dashboard');
-        router.refresh();
+        window.location.href = '/dashboard';
       }
     } catch (error) {
       toast.error('An unexpected error occurred. Please try again.');
