@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { signIn } from 'next-auth/react';
+import { signIn, useSession } from 'next-auth/react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -22,9 +22,16 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { status } = useSession();
   const [isLoading, setIsLoading] = React.useState(false);
 
   const errorParam = searchParams.get('error');
+
+  React.useEffect(() => {
+    if (status === 'authenticated') {
+      window.location.href = '/dashboard';
+    }
+  }, [status]);
 
   React.useEffect(() => {
     if (errorParam) {
@@ -51,21 +58,24 @@ export default function LoginPage() {
   const onSubmit = async (data: LoginFormValues) => {
     setIsLoading(true);
     try {
-      const result = await signIn('credentials', {
-        redirect: false,
+      const res = await signIn('credentials', {
         email: data.email,
         password: data.password,
+        callbackUrl: '/dashboard',
+        redirect: false,
       });
 
-      if (result?.error || !result?.ok) {
+      if (res?.error) {
         toast.error('Invalid email or password');
-      } else {
+        setIsLoading(false);
+      } else if (res?.url) {
         toast.success('Signed in successfully!');
+        window.location.href = res.url;
+      } else {
         window.location.href = '/dashboard';
       }
     } catch (error) {
       toast.error('An unexpected error occurred. Please try again.');
-    } finally {
       setIsLoading(false);
     }
   };

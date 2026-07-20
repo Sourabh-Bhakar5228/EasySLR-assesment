@@ -10,6 +10,7 @@ export const dynamic = 'force-dynamic';
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
+  console.log('[Dashboard] getServerSession result:', session);
   if (!session?.user?.id) {
     redirect('/login');
   }
