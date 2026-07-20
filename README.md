@@ -15,11 +15,11 @@ The review process in clinical research is often tedious, relying on disconnecte
 
 ## 🛠️ Tech Stack & Architecture
 
-This project is built using a modern **Serverless Monolith** architecture, leveraging **Next.js 15 App Router** for both the frontend UI and backend Server Actions.
+This project is built using a modern **Serverless Monolith** architecture, leveraging **Next.js 16 App Router** for both the frontend UI and backend Server Actions.
 
 | Layer | Technology |
 |---|---|
-| **Framework** | Next.js 15 (React 19) |
+| **Framework** | Next.js 16 (React 19) |
 | **Styling** | Tailwind CSS v3, Lucide Icons, Shadcn-like Custom UI |
 | **Database** | PostgreSQL |
 | **ORM** | Prisma |
@@ -150,7 +150,8 @@ npx prisma db push
 npx prisma generate
 
 # Seed the database with default organizations, projects, and users
-npx prisma db seed
+npm run db:seed
+# (or npx prisma db seed)
 ```
 
 ### 5. Running Tests
